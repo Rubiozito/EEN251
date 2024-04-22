@@ -78,8 +78,10 @@ def teste():
     # display.fill(0)
     # display.text("OI", 64, 54)
     # display.show()
-    text = "senha cadastrada"
-    display_oled(text)
+    # text = "senha cadastrada"
+    # display_oled(text)
+    display.fill_rect(0, 0, 32, 32, 1)
+    display.show()
 
 
 # Executando o teste
