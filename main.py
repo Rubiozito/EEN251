@@ -1,7 +1,8 @@
 import ujson
 from machine import Pin, I2C
-from utime import sleep
 from ssd1306 import SSD1306_I2C
+from teclado import MatrixKeyboard
+import utime
 
 # Configuração do LED indicador
 
@@ -9,9 +10,14 @@ from ssd1306 import SSD1306_I2C
 file_name = "senhas.json"
 
 # Pinos display OLED
-i2c0_slc_pin = 9
-i2c0_sda_pin = 8
-i2c0 = I2C(0, scl=Pin(i2c0_slc_pin), sda=Pin(i2c0_sda_pin), freq=400000)
+i2c0_slc_pin = 7
+i2c0_sda_pin = 6
+i2c0 = I2C(1, scl=Pin(i2c0_slc_pin), sda=Pin(i2c0_sda_pin), freq=400000)
+rows_pins = [12, 13, 14, 15]  # Pinos GPIO para as linhas
+cols_pins = [8, 9, 10, 11]  # Pinos GPIO para as colunas
+debounce_time = 20  # Tempo de debounce em milissegundos
+keyboard = MatrixKeyboard(rows_pins, cols_pins, debounce_time)
+
 
 #TODO:  Habilitar somente o display quadno houver atividade no teclado
 display = SSD1306_I2C(128, 64, i2c0)
@@ -48,16 +54,10 @@ def apagar_senha(nome):
     else:
         return False
 
-def display_oled(text):
-    #16 caracteres por linha
-    display.fill(0)
-    display.text(text, 0, 32)
-    display.show()
-
 def display_oled_text(text, row):
     # caracteres tem 8 pixels de altura que equivale a 1 linha 
     pix = row * 8 
-    display.text(text, 0, pix)
+    display.text(text, 0, pix)    
 
 def display_oled_longtext(text, row):
     # caracteres tem 8 pixels de altura que equivale a 1 linha 
@@ -65,40 +65,73 @@ def display_oled_longtext(text, row):
     texts = [text[i:i+16] for i in range(0, len(text), 16)]
     for i, t in enumerate(texts):
         display_oled_text(t, row+i)
-    display.show()
+    display.show()  
 
+def display_password(password, row):
+    pix = row * 8 
+    display.text(password, 48, pix)
+    display.show()    
 
 def display_oled_clear():
     display.fill(0)
-    display.show()
+    display.show()  
 
 # Testando as funções
 def teste():
     # Lendo as senhas
     print("Senhas existentes:", ler_senhas())
+    text = ''
 
-    # Cadastrando uma nova senha
-    # cadastrar_senha("minha_senha", "usuario2")
-    # print("Senha cadastrada")
+    while True:
+        key_chars = keyboard.get_pressed_keys()  # Obtém a lista de teclas pressionadas
+        display_oled_longtext('Digite sua Senha ', 0)
+        # Processa cada tecla pressionada
+        for key in key_chars:
+            print("Tecla pressionada: {}".format(key))
+            text += key
+            display_password(text, 2)
+            if len(text) == 4:
+                text = ''
+                utime.sleep_ms(1000)
+                utime.sleep_ms(3000)
+                display_oled_clear()
+            # if key == '1':
+            #     print("Key pressed: 1")
+            # elif key == '2':
+            #     print("Key pressed: 2")
+            # elif key == '3':
+            #     print("Key pressed: 3")
+            # elif key == 'A':
+            #     print("Key pressed: A")
+            # elif key == '4':
+            #     print("Key pressed: 4")
+            # elif key == '5':
+            #     print("Key pressed: 5")
+            # elif key == '6':
+            #     print("Key pressed: 6")
+            # elif key == 'B':
+            #     print("Key pressed: B")
+            # elif key == '7':
+            #     print("Key pressed: 7")
+            # elif key == '8':
+            #     print("Key pressed: 8")
+            # elif key == '9':
+            #     print("Key pressed: 9")
+            # elif key == 'C':
+            #     print("Key pressed: C")
+            # elif key == '*':
+            #     print("Key pressed: *")
+            # elif key == '0':
+            #     print("Key pressed: 0")
+            # elif key == '#':
+            #     print("Key pressed: #")
+            # elif key == 'D':
+            #     print("Key pressed: D")
+            # else:
+            #     print("Unknown key")
 
-    # Lendo as senhas após o cadastro
-    print("Senhas existentes:", ler_senhas())
-
-    # Apagando uma senha
-    # apagar_senha("usuario1")
-    # print("Senha apagada")
-
-    # Lendo as senhas após a exclusão
-    # print("Senhas existentes:", ler_senhas())
-    # display.text("Hello World!", 16, 54)
-    # display.show()
-    # display.fill(0)
-    # display.text("OI", 64, 54)
-    # display.show()
-    # text = "senha cadastrada"
-    # display_oled(text)
-    display.fill_rect(0, 0, 32, 32, 1)
-    display.show()
+        # Pausa para debounce e redução do uso da CPU
+        utime.sleep_ms(100)
 
 
 # Executando o teste
