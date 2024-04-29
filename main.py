@@ -50,9 +50,26 @@ def apagar_senha(nome):
 
 def display_oled(text):
     #16 caracteres por linha
-
     display.fill(0)
     display.text(text, 0, 32)
+    display.show()
+
+def display_oled_text(text, row):
+    # caracteres tem 8 pixels de altura que equivale a 1 linha 
+    pix = row * 8 
+    display.text(text, 0, pix)
+
+def display_oled_longtext(text, row):
+    # caracteres tem 8 pixels de altura que equivale a 1 linha 
+    #16 caracteres por linha    
+    texts = [text[i:i+16] for i in range(0, len(text), 16)]
+    for i, t in enumerate(texts):
+        display_oled_text(t, row+i)
+    display.show()
+
+
+def display_oled_clear():
+    display.fill(0)
     display.show()
 
 # Testando as funções
