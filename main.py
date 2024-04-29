@@ -67,11 +67,6 @@ def display_oled_longtext(text, row):
         display_oled_text(t, row+i)
     display.show()  
 
-def display_password(password, row):
-    pix = row * 8 
-    display.text(password, 48, pix)
-    display.show()    
-
 def display_password(password,row):
     pix = row * 8 
     display.text(password, 48, pix)
