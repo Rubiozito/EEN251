@@ -1,3 +1,4 @@
-text = "senha cadastrada"
-
-print(len(text))
+text = ''
+while len(text) < 4:
+    text += input("Digite a senha: ")
+    print(text)
