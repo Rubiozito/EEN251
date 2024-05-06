@@ -1,5 +1,5 @@
 import ujson
-from machine import Pin, I2C
+from machine import Pin, I2C, ADC
 from ssd1306 import SSD1306_I2C
 from teclado import MatrixKeyboard
 import utime
@@ -9,7 +9,7 @@ import utime
 # Nome do arquivo JSON para armazenar as senhas
 file_name = "senhas.json"
 
-# Pinos display OLED
+# Pinos 
 i2c0_slc_pin = 7
 i2c0_sda_pin = 6
 i2c0 = I2C(1, scl=Pin(i2c0_slc_pin), sda=Pin(i2c0_sda_pin), freq=400000)
@@ -17,6 +17,28 @@ rows_pins = [12, 13, 14, 15]  # Pinos GPIO para as linhas
 cols_pins = [8, 9, 10, 11]  # Pinos GPIO para as colunas
 debounce_time = 20  # Tempo de debounce em milissegundos
 keyboard = MatrixKeyboard(rows_pins, cols_pins, debounce_time)
+obstacle_pin = 16
+obstacle = Pin(obstacle_pin, Pin.IN)
+water_pin = 18
+water = Pin(water_pin, Pin.OUT)
+water.value(0)
+wlevel_pin = 26
+#Fora da agua 3.3V
+#Dentro da agua 1.7V pra baixo
+level_analog = ADC(Pin(wlevel_pin, Pin.IN))
+
+
+# Função temporizada para leitura da saída analógica do sensor
+def hygrometer_analog_read():
+    # Lê o valor da entrada analógica do sensor como um valor positivo de 16 bits
+    hygrometer_analog_value = level_analog.read_u16()
+    # Converte o valor analógica na forma de um valor positivo de 16 bits para tensão (valor de um bit = 3.3/(2^16 - 1) = 3.3/65535)
+    hygrometer_voltage = hygrometer_analog_value / 65535 * 3.3
+
+    # Imprime o valor da tensão lida
+    #print("Tensão lida: {:.2f} V".format(hygrometer_voltage))
+    return hygrometer_voltage
+    
 
 
 #TODO:  Habilitar somente o display quadno houver atividade no teclado
@@ -74,27 +96,58 @@ def display_password(password,row):
 
 def display_oled_clear():
     display.fill(0)
-    display.show()  
+    #display.show()  
 
+def apagar_tela():
+    display.fill(0)
+    display.show() 
+
+def verifica_porta():
+    return obstacle.value()
+
+def verifica_agua():
+    pass
+
+def aciona_agua():
+    water.value(1)
+    display_oled_clear()
+    display_oled_longtext('Agua Acionada', 0)
+    utime.sleep_ms(10000)
+    water.value(0)
 # Testando as funções
 def teste():
     # Lendo as senhas
     print("Senhas existentes:", ler_senhas())
     text = ''
-
+    apagar_tela()
+    utime.sleep_ms(1000)
     while True:
-        key_chars = keyboard.get_pressed_keys()  # Obtém a lista de teclas pressionadas
-        display_oled_longtext('Digite sua Senha ', 0)
+        nivel_agua = hygrometer_analog_read()
+        print("Tensão lida: {:.2f} V".format(nivel_agua))
+        utime.sleep_ms(5000)
+
+        # aciona_agua()
+        # utime.sleep_ms(10000)
+        # porta = verifica_porta()
+        # if porta == 0:
+        #     display_oled_clear()
+        #     display_oled_longtext('Porta Fechada', 0)
+        # else:
+        #     display_oled_clear()
+        #     display_oled_longtext('Porta Aberta', 0)
+
+        # key_chars = keyboard.get_pressed_keys()  # Obtém a lista de teclas pressionadas
+        # display_oled_longtext('Digite sua Senha ', 0)
         # Processa cada tecla pressionada
-        for key in key_chars:
-            print("Tecla pressionada: {}".format(key))
-            text += key
-            display_password(text, 2)
-            if len(text) == 4:
-                text = ''
-                utime.sleep_ms(1000)
-                utime.sleep_ms(3000)
-                display_oled_clear()
+        # for key in key_chars:
+        #     print("Tecla pressionada: {}".format(key))
+        #     text += key
+        #     display_password(text, 2)
+        #     if len(text) == 4:
+        #         text = ''
+        #         utime.sleep_ms(1000)
+        #         utime.sleep_ms(3000)
+        #         display_oled_clear()
             # if key == '1':
             #     print("Key pressed: 1")
             # elif key == '2':
