@@ -114,14 +114,20 @@ def verifica_porta():
     return obstacle.value()
 
 def verifica_agua():
+    #retorna um bool
     pass
 
 def aciona_agua():
     water.value(1)
     display_oled_clear()
     display_oled_longtext('Agua Acionada', 0)
-    utime.sleep_ms(10000)
+    utime.sleep_ms(2000)
     water.value(0)
+    display_oled_longtext('Você foi molhado', 0)
+    utime.sleep_ms(5000)
+    display_oled_clear()
+
+
 # Testando as funções
 def teste():
     # Lendo as senhas
