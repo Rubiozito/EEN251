@@ -3,6 +3,7 @@ from machine import Pin, I2C, ADC
 from ssd1306 import SSD1306_I2C
 from teclado import MatrixKeyboard
 import utime
+from servo import Servo
 
 # Configuração do LED indicador
 
@@ -10,22 +11,29 @@ import utime
 file_name = "senhas.json"
 
 # Pinos 
+#pinos display OLED
 i2c0_slc_pin = 7
 i2c0_sda_pin = 6
 i2c0 = I2C(1, scl=Pin(i2c0_slc_pin), sda=Pin(i2c0_sda_pin), freq=400000)
+# Pinos do teclado matricial
 rows_pins = [12, 13, 14, 15]  # Pinos GPIO para as linhas
 cols_pins = [8, 9, 10, 11]  # Pinos GPIO para as colunas
 debounce_time = 20  # Tempo de debounce em milissegundos
 keyboard = MatrixKeyboard(rows_pins, cols_pins, debounce_time)
+#Pino do sensor de obstaculo
 obstacle_pin = 16
 obstacle = Pin(obstacle_pin, Pin.IN)
+#Pino do sensor de nivel de agua
 water_pin = 18
 water = Pin(water_pin, Pin.OUT)
 water.value(0)
 wlevel_pin = 26
 #Fora da agua 3.3V
 #Dentro da agua 1.7V pra baixo
+#Sensor de nivel de agua
 level_analog = ADC(Pin(wlevel_pin, Pin.IN))
+#pino servo motor
+servo = Servo(pin=4)
 
 
 # Função temporizada para leitura da saída analógica do sensor
@@ -121,10 +129,18 @@ def teste():
     text = ''
     apagar_tela()
     utime.sleep_ms(1000)
-    while True:
-        nivel_agua = hygrometer_analog_read()
-        print("Tensão lida: {:.2f} V".format(nivel_agua))
-        utime.sleep_ms(5000)
+    servo.move(100)  # turns the servo to 90°.
+    utime.sleep_ms(1000)
+    #servo.move(70)  # turns the servo to 90°.
+
+    # while True:
+    #     servo.move(45)  # turns the servo to 0°.
+        # utime.sleep_ms(1000)
+        # servo.move(0)  # turns the servo to 90°.
+        # utime.sleep_ms(1000)
+        # nivel_agua = hygrometer_analog_read()
+        # print("Tensão lida: {:.2f} V".format(nivel_agua))
+        # utime.sleep_ms(5000)
 
         # aciona_agua()
         # utime.sleep_ms(10000)
@@ -184,7 +200,7 @@ def teste():
             #     print("Unknown key")
 
         # Pausa para debounce e redução do uso da CPU
-        utime.sleep_ms(100)
+        #utime.sleep_ms(100)
 
 
 # Executando o teste
