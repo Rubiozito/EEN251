@@ -34,6 +34,8 @@ wlevel_pin = 26
 level_analog = ADC(Pin(wlevel_pin, Pin.IN))
 #pino servo motor
 servo = Servo(pin=4)
+ABERTO = 10
+FECHADO = 100
 
 
 # Função temporizada para leitura da saída analógica do sensor
@@ -84,6 +86,20 @@ def apagar_senha(nome):
     else:
         return False
 
+def fechar_porta():
+    servo.move(FECHADO)
+    display_oled_clear()
+    display_oled_longtext('Porta Fechada', 0)
+    utime.sleep_ms(1000)
+    display_oled_clear()
+
+def abrir_porta():
+    servo.move(ABERTO)
+    display_oled_clear()
+    display_oled_longtext('Porta Aberta', 0)
+    utime.sleep_ms(1000)
+    display_oled_clear()
+
 def display_oled_text(text, row):
     # caracteres tem 8 pixels de altura que equivale a 1 linha 
     pix = row * 8 
@@ -114,19 +130,68 @@ def verifica_porta():
     return obstacle.value()
 
 def verifica_agua():
-    #retorna um bool
-    pass
-
+    if hygrometer_analog_read() > 3:
+        return False
+    else:
+        return True
+    
 def aciona_agua():
-    water.value(1)
-    display_oled_clear()
-    display_oled_longtext('Agua Acionada', 0)
-    utime.sleep_ms(2000)
-    water.value(0)
-    display_oled_longtext('Você foi molhado', 0)
-    utime.sleep_ms(5000)
-    display_oled_clear()
+    if verifica_agua():
+        water.value(1)
+        display_oled_clear()
+        display_oled_longtext('Agua Acionada', 0)
+        utime.sleep_ms(1000)
+        water.value(0)
+    else:
+        display_oled_clear()
+        display_oled_longtext('Agua Nivel Baixo', 0)
 
+def check_boot():
+    display_oled_clear()
+    display_oled_longtext('Sistema Iniciado', 0)
+    utime.sleep_ms(1000)
+    display_oled_clear()
+    display_oled_longtext('Verificando Porta', 0)
+    utime.sleep_ms(1000)
+    porta = verifica_porta()
+    while porta == 1:
+            display_oled_clear()
+            display_oled_longtext('Fechar porta', 0)
+            utime.sleep_ms(2000)
+            porta = verifica_porta()
+    display_oled_clear()
+    fechar_porta()
+    utime.sleep_ms(1000)
+    display_oled_clear()
+    display_oled_longtext('Verificando Agua', 0)
+    nivel_agua = verifica_agua()
+    if nivel_agua:
+        display_oled_clear()
+        display_oled_longtext('Agua Nivel Baixo', 0)
+    else:
+        display_oled_clear()
+        display_oled_longtext('Agua Nivel Normal', 0)
+    utime.sleep_ms(1000)
+    display_oled_clear()
+    display_oled_longtext('Sistema Pronto', 0)
+    utime.sleep_ms(1000)
+    apagar_tela()
+
+def keybord_get_password():
+    password = ''
+    while len(password) < 4:
+        key_chars = keyboard.get_pressed_keys()  # Obtém a lista de teclas pressionadas
+        display_oled_longtext('Digite sua Senha ', 0)  
+        for key in key_chars:
+            if key == 'A' or key == 'B' or key == 'C' or key == 'D' or key == '*' or key == '#':
+                continue
+            else:
+                text += key
+            display_password(text, 2)
+        utime.sleep_ms(100)
+
+    utime.sleep_ms(3000)
+    return password
 
 # Testando as funções
 def teste():
@@ -134,19 +199,23 @@ def teste():
     print("Senhas existentes:", ler_senhas())
     text = ''
     apagar_tela()
+    servo.move(FECHADO)
     utime.sleep_ms(1000)
-    servo.move(100)  # turns the servo to 90°.
-    utime.sleep_ms(1000)
+    check_boot()
+    # utime.sleep_ms(1000)
+    # servo.move(100)  # turns the servo to 90°.
+    # utime.sleep_ms(1000)
     #servo.move(70)  # turns the servo to 90°.
 
     # while True:
-    #     servo.move(45)  # turns the servo to 0°.
-        # utime.sleep_ms(1000)
-        # servo.move(0)  # turns the servo to 90°.
-        # utime.sleep_ms(1000)
-        # nivel_agua = hygrometer_analog_read()
-        # print("Tensão lida: {:.2f} V".format(nivel_agua))
-        # utime.sleep_ms(5000)
+    # #     servo.move(45)  # turns the servo to 0°.
+    #     # utime.sleep_ms(1000)
+    #     # servo.move(0)  # turns the servo to 90°.
+    #     # utime.sleep_ms(1000)
+    #     nivel_agua = hygrometer_analog_read()
+    #     print("Tensão lida: {:.2f} V".format(nivel_agua))
+    #     aciona_agua()
+    #     utime.sleep_ms(5000)
 
         # aciona_agua()
         # utime.sleep_ms(10000)
@@ -210,4 +279,16 @@ def teste():
 
 
 # Executando o teste
-teste()
+#teste()
+def main():
+    while True:
+        key_chars = keyboard.get_pressed_keys()
+        for key in key_chars:
+            if key == 'A' or key == 'B' or key == 'C' or key == '*' or key == '#':
+                continue
+            if key == 'D':
+                #inicar loop de tentativas
+                keybord_get_password()
+
+check_boot()
+main()
