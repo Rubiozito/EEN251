@@ -36,6 +36,7 @@ level_analog = ADC(Pin(wlevel_pin, Pin.IN))
 servo = Servo(pin=4)
 ABERTO = 10
 FECHADO = 100
+MAX_ATTEMPTS = 4
 
 
 # Função temporizada para leitura da saída analógica do sensor
@@ -64,16 +65,26 @@ def ler_senhas():
         return {}
 
 # Função para cadastrar uma nova senha
-def cadastrar_senha(senha, nome):
+def cadastrar_senha(senha, numero):
     if not senha.isdigit() or len(senha) != 4:
-        print("A senha deve ser composta apenas por números e ter 4 dígitos.")
-        return
-    
+        display_oled_clear()
+        display_oled_longtext('Senha Invalida', 0)
+        utime.sleep_ms(1000)
+        return False
+    numero = int(numero)
+    if numero < 1 or numero > 5:
+        display_oled_clear()
+        display_oled_longtext('Numero de Senha Invalido', 0)
+        utime.sleep_ms(1000)
+        return False
+
     senhas = ler_senhas()
-    senhas[nome] = senha
+    senha_key = 'senha' + str(numero)
+    senhas[senha_key] = senha
     with open(file_name, "w") as file:
         ujson.dump(senhas, file)
-    print("Senha cadastrada com sucesso.")
+    return True
+    
 
 # Função para apagar uma senha
 def apagar_senha(nome):
@@ -85,6 +96,13 @@ def apagar_senha(nome):
         return True
     else:
         return False
+
+def verificar_senha(senha):
+    senhas = ler_senhas()
+    for nome, senha_cadastrada in senhas.items():
+        if senha == senha_cadastrada:
+            return True
+    return False
 
 def fechar_porta():
     servo.move(FECHADO)
@@ -127,7 +145,9 @@ def apagar_tela():
     display.show() 
 
 def verifica_porta():
-    return obstacle.value()
+    if obstacle.value() == 1:
+        return False
+    return True
 
 def verifica_agua():
     if hygrometer_analog_read() > 3:
@@ -154,7 +174,7 @@ def check_boot():
     display_oled_longtext('Verificando Porta', 0)
     utime.sleep_ms(1000)
     porta = verifica_porta()
-    while porta == 1:
+    while not porta:
             display_oled_clear()
             display_oled_longtext('Fechar porta', 0)
             utime.sleep_ms(2000)
@@ -183,15 +203,33 @@ def keybord_get_password():
         key_chars = keyboard.get_pressed_keys()  # Obtém a lista de teclas pressionadas
         display_oled_longtext('Digite sua Senha ', 0)  
         for key in key_chars:
+            if key == 'A' or key == 'B' or key == 'C' or key == '*' or key == '#':
+                continue
+            if key == 'D':
+                password = password[:-1]
+            else:
+                password += key
+            display_password(password, 2)
+        utime.sleep_ms(100)
+    
+    utime.sleep_ms(3000)
+    return password
+
+def keybord_get_number():
+    number =''
+    while len(number) < 1:
+        key_chars = keyboard.get_pressed_keys()  # Obtém a lista de teclas pressionadas
+        display_oled_longtext('Digite um numero de 1 a 5 ', 0)  
+        for key in key_chars:
             if key == 'A' or key == 'B' or key == 'C' or key == 'D' or key == '*' or key == '#':
                 continue
             else:
-                text += key
-            display_password(text, 2)
+                number += key
+            display_password(number, 2)
         utime.sleep_ms(100)
 
     utime.sleep_ms(3000)
-    return password
+    return number
 
 # Testando as funções
 def teste():
@@ -282,13 +320,63 @@ def teste():
 #teste()
 def main():
     while True:
-        key_chars = keyboard.get_pressed_keys()
-        for key in key_chars:
-            if key == 'A' or key == 'B' or key == 'C' or key == '*' or key == '#':
-                continue
-            if key == 'D':
-                #inicar loop de tentativas
-                keybord_get_password()
+        while verifica_porta():   
+            key_chars = keyboard.get_pressed_keys()
+            for key in key_chars:
+                if key == 'A' or key == 'B' or key == 'C' or key == '*' or key == '#':
+                    continue
+                if key == 'D':
+                    attempts = 0
+                    while attempts < MAX_ATTEMPTS:
+                        password = keybord_get_password()
+                        if verificar_senha(password):
+                            display_oled_clear()
+                            display_oled_longtext('Senha Correta', 0)
+                            utime.sleep_ms(1000)
+                            attempts = 0
+                            display_oled_clear()
+                            abrir_porta()
+                            break
+                        else:
+                            display_oled_clear()
+                            display_oled_longtext('Senha Incorreta', 0)
+                            aciona_agua()
+                            utime.sleep_ms(1000)
+                            display_oled_clear()
+                            attempts += 1
+                    if attempts == MAX_ATTEMPTS:
+                        display_oled_clear()
+                        display_oled_longtext('Tentativas Esgotadas', 0)
+                        utime.sleep_ms(1000)
+                        display_oled_clear()
+                        display_oled_longtext('Espere 1 minuto para tentar novamente', 0)
+                        utime.sleep_ms(60000)
 
+        while not verifica_porta():
+            key_chars = keyboard.get_pressed_keys()
+            for key in key_chars:
+                if key == 'A' or key == 'B' or key == 'D' or key == '*' or key == '#':
+                    continue
+                if key == 'C':
+                    new_password = keybord_get_password()
+                    display_oled_clear()
+                    number = keybord_get_number()
+                    if cadastrar_senha(new_password, number):
+                        display_oled_clear()
+                        display_oled_longtext('Senha Cadastrada', 0)
+                    else:
+                        display_oled_clear()
+                        display_oled_longtext('Senha Invalida', 0)
+
+            if verifica_porta():
+                utime.sleep_ms(2000)
+                if verifica_porta():
+                    display_oled_clear()
+                    display_oled_longtext('Fechando a porta', 0)
+                    fechar_porta()
+                    utime.sleep_ms(1000)
+                    display_oled_clear()
 check_boot()
 main()
+
+
