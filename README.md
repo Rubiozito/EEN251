@@ -1,6 +1,6 @@
-# Sistema de Cofre Digital Seguro
+# Sistema de Cofre Digital
 
-Este repositório contém o código e as instruções para um sistema de cofre digital seguro utilizando o Raspberry Pi Pico. O sistema integra um display OLED, teclado matricial, motor servo e sensores para gerenciar o acesso seguro e monitorar condições ambientais.
+Este repositório contém o código e as instruções para um sistema de cofre digital utilizando o Raspberry Pi Pico. O sistema integra um display OLED, teclado matricial, motor servo e sensores para gerenciar o acesso ao cofre e monitorar condições ambientais.
 
 ## Funcionalidades
 
