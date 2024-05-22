@@ -12,12 +12,16 @@ Este repositório contém o código e as instruções para um sistema de cofre d
 
 ## Componentes
 
-- Raspberry Pi Pico
-- Display OLED (128x64)
-- Teclado Matricial
-- Motor Servo
-- Sensor de Nível de Água
-- Sensor de Obstáculos
+| Item          | Código           | Qtd    |   Preço | Preço Total  | Fonte                                       |
+| ------------- |:----------------:| :-----:| :-----: | :-----:      | -------------:|
+| Servo motor mg996 | MG996  | 1 | R$ 45,90 | R$ 45,90 | https://shorturl.at/DctgH |
+| Mini bomba de água | DC-JT160 | 1 | R$ 95,00 | R$ 95,00 | https://shorturl.at/y9YZJ |
+| Display OLED i2c OLED 128x32 Px | Oled | 1 | R$ 31,90 | R$ 31,90 | https://shorturl.at/yYNVK |
+| Bateria externa para embarcados | ? | 1 | R$ 10,14 | R$ 10,14 | https://t.ly/dYp5f |
+| Sensor umidade solo | Higrômetro | 1 | R$ 11,90 | R$ 11,90 | https://t.ly/64o8A |
+| Teclado matriz 4x4 membrana | Teclado 4x4 | 1 | R$ 8,90 | R$ 8,90 | https://t.ly/hmqxS |
+| Proto 170 pinos | Proto | 1 | R$ 28,00 | R$ 28,00 | https://t.ly/TIt6C |
+| Sensor obstáculo | IR | 1 | R$ 10,00 | R$ 10,00 | https://t.ly/wDjsv |
 
 ## Configuração
 
