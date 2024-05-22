@@ -14,6 +14,7 @@ Este repositório contém o código e as instruções para um sistema de cofre d
 
 | Item          | Código           | Qtd    |   Preço | Preço Total  | Fonte                                       |
 | ------------- |:----------------:| :-----:| :-----: | :-----:      | -------------:|
+| Raspberry Pi Pico | ? | 1 | R$ 33,90 | R$ 33,90 | https://tinyurl.com/2s45v4t9|
 | Servo motor mg996 | MG996  | 1 | R$ 45,90 | R$ 45,90 | https://shorturl.at/DctgH |
 | Mini bomba de água | DC-JT160 | 1 | R$ 95,00 | R$ 95,00 | https://shorturl.at/y9YZJ |
 | Display OLED i2c OLED 128x32 Px | Oled | 1 | R$ 31,90 | R$ 31,90 | https://shorturl.at/yYNVK |
